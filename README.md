@@ -43,6 +43,18 @@ One static page, no build step: MapLibre GL (vendored) on a CARTO dark basemap.
 - Chat dock → `/api/chat`: the model calls `recommend` / `neighborhood` / `compare`, the answer sets the sliders, highlights the picks on the map and opens the drawer.
 - Degrades without WebGL (ranking, drawer, chat still work).
 
+## Mode 2 — Find a place through your network (`backend/network.py`, `scripts/seed_network.py`)
+Synthetic demo network (41 people, 113 edges, 12 listings) seeded into Postgres; `make seed-network` to rebuild.
+1. **Profile** — LinkedIn/X handles, budget, room type, must-haves (Postgres `user_profile`).
+2. **Network** — 1st degree = your edges, 2nd = edges of members you're linked to (BFS). Badges: ✓ verified = edge on both sides, ✓ In SF = X location resolves to SF (regex; real X lookup is a one-function swap), 🏠 has a place.
+3. **Listings pool** — members' own listings, listings *shared by* your connections (owner off-platform), and "found on the web" URL imports.
+4. **Fit score** — 0.45 × neighborhood score (your mode-1 weights, ClickHouse) + 0.40 × price vs fair range (`rent_benchmarks`, *illustrative*) & budget + 0.15 × must-haves. "Perfect match" = neighborhood ≥ 60, rent ≤ min(budget, fair median +5%), all must-haves.
+5. **Reach** — member → *Chat now*; shared by a connection → *Ask <bridge> for an intro*; off-platform → *Invite owner by email* (Resend if `RESEND_API_KEY`, else on-screen outbox) with a magic join link (`/?join=TOKEN`) that makes them a member and unlocks chat.
+6. **Negotiate** — chat with the owner (for the demo an AI persona with a hidden reservation price, `OPENAI_FAST_MODEL`). After every turn the **Advisor** computes fit, fair range, suggested counter and a verdict: ACCEPT / COUNTER $X / WALK AWAY, with the reason.
+7. **Funnel** — every step is an event in ClickHouse `better_days.events` → invites → joined → chats → offers → deals.
+
+Endpoints: `/api/net/graph/{user}`, `/api/net/listings/{user}`, `/api/net/profile`, `/api/net/invite`, `/api/net/join/{token}`, `/api/net/outbox/{user}`, `/api/net/negotiation/{listing}` (+`/message`), `/api/net/funnel/{user}`.
+
 ## API (`backend/main.py`)
 | Endpoint | Purpose |
 |---|---|
