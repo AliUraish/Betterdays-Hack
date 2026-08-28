@@ -9,6 +9,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 import analytics as A
+import network as N
 
 ROOT = Path(__file__).resolve().parent.parent
 PUBLIC_URL = os.getenv("PUBLIC_URL", "http://localhost:8800")
@@ -16,6 +17,7 @@ app = FastAPI(title="Better Days — SF Neighborhood Finder", version="0.1.0",
               description="Scores 117 San Francisco neighborhoods on livability dimensions derived from 311 cases (ClickHouse).",
               servers=[{"url": PUBLIC_URL}])
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+app.include_router(N.router)
 
 # ---------------------------------------------------------------- Postgres (optional: prefs / saved)
 def _pg_url():
