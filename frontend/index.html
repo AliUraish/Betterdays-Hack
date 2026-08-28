@@ -123,13 +123,13 @@ table.rank td.num{width:44px;text-align:right;font:500 12px var(--mono);color:va
 .seg.mode{margin-top:12px}
 .field{flex:1} .field label{display:block;font-size:10.5px;color:var(--text-3);margin-bottom:3px}
 .pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px} .pills .pill b{color:var(--text)}
-#net{width:100%;height:270px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line);cursor:pointer;display:block}
+#net{width:100%;height:300px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line);cursor:pointer;display:block}
 #net-tip{position:absolute;pointer-events:none;background:var(--surface);border:1px solid var(--line-2);border-radius:8px;padding:6px 9px;font-size:11.5px;box-shadow:var(--shadow);display:none;z-index:5;max-width:220px}
 .lrow{display:grid;grid-template-columns:44px 1fr auto;gap:10px;align-items:center;padding:8px 4px;border-bottom:1px solid var(--line);cursor:pointer;transition:background .12s} .lrow:hover{background:var(--surface-2)} .lrow.sel{background:rgba(57,135,229,.12)}
 .fitb{width:44px;height:44px;border-radius:10px;display:grid;place-items:center;font:700 15px var(--font);color:#fff;background:var(--surface-3)}
 .fitb.g{background:rgba(12,163,12,.22);color:#7ee07e} .fitb.w{background:rgba(250,178,25,.18);color:#ffd166} .fitb.b{background:rgba(255,255,255,.06);color:var(--text-3)}
 .lrow .t{font-weight:500;font-size:12.5px} .lrow .m{font-size:11px;color:var(--text-3)} .lrow .r{font:500 11px var(--font);color:var(--text-2);text-align:right;white-space:nowrap}
-.lrow .r .how{display:inline-block;padding:2px 7px;border-radius:999px;border:1px solid var(--line);margin-top:3px;font-size:10.5px}
+.lrow .r .how{display:inline-block;padding:2px 7px;border-radius:999px;border:1px solid var(--line);margin-top:3px;font-size:10.5px;max-width:150px;overflow:hidden;text-overflow:ellipsis}
 .how.chat{color:#7ee07e;border-color:rgba(12,163,12,.5)} .how.intro{color:#b7d3f6;border-color:rgba(57,135,229,.5)} .how.invite{color:#f9c4a3;border-color:rgba(217,89,38,.5)}
 .funnel{display:grid;grid-template-columns:repeat(5,1fr);gap:6px} .funnel .kpi{padding:8px 6px;text-align:center} .funnel .kpi .v{font-size:16px}
 .tag{display:inline-block;font:600 10.5px var(--font);padding:3px 8px;border-radius:999px;background:rgba(12,163,12,.2);color:#7ee07e;vertical-align:middle;margin-left:8px}
@@ -144,6 +144,15 @@ table.rank td.num{width:44px;text-align:right;font:500 12px var(--mono);color:va
 .vd.ACCEPT{background:rgba(12,163,12,.25);color:#7ee07e} .vd.COUNTER{background:rgba(250,178,25,.2);color:#ffd166} .vd.WALK_AWAY{background:rgba(208,59,59,.25);color:#ffb4b4}
 .advisor .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0} .advisor .grid div{background:var(--surface-2);border-radius:8px;padding:6px 8px} .advisor .grid b{display:block;font-size:14px} .advisor .grid small{color:var(--text-3);font-size:10.5px}
 .advisor .why{font-size:12px;color:var(--text-2);margin-top:6px}
+.advisor .big{font:700 24px/1.15 var(--font);letter-spacing:-.02em;margin:6px 0 2px} .advisor .plan{font-size:12px;color:var(--text-2)}
+.advisor.ACCEPT{border-color:rgba(12,163,12,.45);background:linear-gradient(180deg,rgba(12,163,12,.12),rgba(12,163,12,.02))} .advisor.COUNTER{border-color:rgba(250,178,25,.4);background:linear-gradient(180deg,rgba(250,178,25,.10),rgba(250,178,25,.02))} .advisor.WALK_AWAY{border-color:rgba(208,59,59,.45);background:linear-gradient(180deg,rgba(208,59,59,.12),rgba(208,59,59,.02))}
+.advisor .fitsm{text-align:center;background:var(--surface-2);border-radius:10px;padding:6px 10px;min-width:52px} .advisor .fitsm b{display:block;font-size:18px} .advisor .fitsm small{color:var(--text-3);font-size:10px}
+.ladder{position:relative;height:8px;border-radius:4px;background:var(--surface-3);margin:44px 6px 40px}
+.ladder .fair{position:absolute;top:0;bottom:0;background:rgba(25,158,112,.5);border-radius:4px}
+.ladder .mk{position:absolute;top:50%;transform:translate(-50%,-50%)} .ladder .mk i{display:block;width:12px;height:12px;border-radius:50%;border:2px solid #14151a}
+.ladder .mk span{position:absolute;left:50%;transform:translateX(-50%);bottom:14px;white-space:nowrap;font:600 10.5px var(--font);color:var(--text)} .ladder .mk span.b{bottom:auto;top:14px;color:var(--text-2);font-weight:500}
+.ladder .mk.ask i{background:#fff} .ladder .mk.off i{background:#7ee07e} .ladder .mk.off span{color:#7ee07e} .ladder .mk.bud i{background:#c98500} .ladder .mk.max i{background:#e66767} .ladder .mk.max span{color:#ffb4b4}
+.ladder .fl{position:absolute;top:26px;transform:translateX(-50%);font:500 10px var(--mono);color:var(--text-3);white-space:nowrap}
 .neg{display:flex;flex-direction:column;gap:8px;margin:10px 0} .neg .msg{max-width:88%} .neg .msg.o{align-self:flex-start;background:var(--surface-2);border:1px solid var(--line)} .neg .msg .of{display:block;font:500 11px var(--mono);color:#ffd166;margin-top:3px}
 .email{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:12px;white-space:pre-wrap;color:var(--text-2)} .email b{color:var(--text)}
 .badge{font-size:10.5px;padding:2px 7px;border-radius:999px;border:1px solid var(--line);color:var(--text-2);margin-right:4px} .badge.ok{color:#7ee07e;border-color:rgba(12,163,12,.5)}
@@ -165,12 +174,12 @@ table.rank td.num{width:44px;text-align:right;font:500 12px var(--mono);color:va
     <div class="seg mode" role="tablist"><button class="on" data-mode="explore" role="tab">Explore neighborhoods</button><button data-mode="network" role="tab">Find a place via network</button></div>
   </header>
   <div class="scroll">
-  <div id="m1">
     <section>
       <div class="sec-title">Map layer</div>
       <div class="seg" role="tablist"><button class="on" data-layer="score" role="tab">Neighborhood score</button><button data-layer="heat" role="tab">Complaint heat</button></div>
       <div class="chips" id="heatdims" hidden></div>
     </section>
+  <div id="m1">
     <section>
       <div class="sec-title">What matters to you <span id="preset-row"></span></div>
       <div id="sliders"></div>
@@ -199,7 +208,7 @@ table.rank td.num{width:44px;text-align:right;font:500 12px var(--mono);color:va
     </section>
     <section>
       <div class="sec-title">Your network <span id="net-meta" style="font-weight:500;letter-spacing:0;text-transform:none"></span></div>
-      <canvas id="net" width="332" height="270" aria-label="Network graph"></canvas><div id="net-tip"></div>
+      <canvas id="net" width="332" height="300" aria-label="Network graph"></canvas><div id="net-tip"></div>
       <div class="pills" id="net-pills"></div>
       <div class="legend2" style="margin-top:8px;font-size:11px"><span><b style="background:var(--s1)"></b>member</span><span><b style="background:#2a2c33;border:1px solid #7f7e76"></b>not yet</span><span><b style="background:var(--s3)"></b>✓ verified</span><span><b style="background:var(--s2)"></b>has a place</span></div>
     </section>
@@ -360,16 +369,21 @@ function buildPresets(){ const b=$('#presets'); b.innerHTML=''; for (const n in 
 function markPreset(){ document.querySelectorAll('#presets .chip').forEach(c => c.classList.toggle('on', Object.keys(DIMS).every(k => PRESETS[c.textContent][k]===state.weights[k]))); }
 function buildHeatChips(){ const b=$('#heatdims'); b.innerHTML=''; for (const [k,l] of Object.entries(HEAT_DIMS)){ const c=document.createElement('button'); c.className='chip'+(k===state.heatDim?' on':''); c.textContent=l; c.onclick=()=>{ state.heatDim=k; buildHeatChips(); loadHeat(); }; b.appendChild(c);} }
 function buildNear(){ const s=$('#near'); state.fc.features.map(f=>f.properties.name).sort().forEach(n=>{ const o=document.createElement('option'); o.value=n; o.textContent=n; s.appendChild(o); }); s.onchange=()=>{ state.near=s.value; recompute(); if(state.near) flyTo([state.near]); }; $('#radius').onchange=e=>{ state.radius=+e.target.value; recompute(); }; }
-document.querySelectorAll('.seg button').forEach(b => b.onclick = () => setLayer(b.dataset.layer));
+document.querySelectorAll('.seg:not(.mode) button').forEach(b => b.onclick = () => setLayer(b.dataset.layer));
 function setLayer(l){
-  state.layer=l; document.querySelectorAll('.seg button').forEach(b=>b.classList.toggle('on',b.dataset.layer===l));
-  const heat = l==='heat'; $('#heatdims').hidden=!heat;
+  state.layer=l; document.querySelectorAll('.seg:not(.mode) button').forEach(b=>b.classList.toggle('on',b.dataset.layer===l));
+  $('#heatdims').hidden = l!=='heat'; applyLayers(); if(l==='heat') loadHeat();
+}
+function applyLayers(){
+  if(!popup) return;
+  const heat = state.layer==='heat', net = state.mode==='network';
   map.setLayoutProperty('heat','visibility',heat?'visible':'none');
-  map.setPaintProperty('nbhd-fill','fill-opacity', heat ? 0.04 : ['case',['boolean',['feature-state','hover'],false],0.9,['boolean',['get','residential'],true],['interpolate',['linear'],['coalesce',['get','score'],0],0,0.35,100,0.88],0.08]);
-  map.setLayoutProperty('labels','visibility',heat?'none':'visible');
+  map.setLayoutProperty('labels','visibility',(!heat && !net)?'visible':'none');
+  ['lst-glow','lst-dot','lst-label'].forEach(x => map.setLayoutProperty(x,'visibility',net?'visible':'none'));
+  const lo = heat ? 0.03 : net ? 0.14 : 0.35, hi = heat ? 0.03 : net ? 0.42 : 0.88;
+  map.setPaintProperty('nbhd-fill','fill-opacity', ['case',['boolean',['feature-state','hover'],false],(heat?0.15:0.9),['boolean',['get','residential'],true],['interpolate',['linear'],['coalesce',['get','score'],0],0,lo,100,hi],0.06]);
   $('#legend-title').textContent = heat ? `Complaint density · ${HEAT_DIMS[state.heatDim]}` : 'Weighted neighborhood score';
   $('#legend-ramp').className = 'ramp'+(heat?' heat':''); $('#legend-lo').textContent = heat?'fewer':'0 · worse'; $('#legend-hi').textContent = heat?'more':'100 · better';
-  if(heat) loadHeat();
 }
 async function loadHeat(){
   const k=state.heatDim; $('#legend-title').textContent = `Complaint density · ${HEAT_DIMS[k]}`;
@@ -470,15 +484,9 @@ const MUST = {pets:'Pets ok', furnished:'Furnished', parking:'Parking', laundry:
 document.querySelectorAll('.seg.mode button').forEach(b => b.onclick = () => setMode(b.dataset.mode));
 function setMode(m){
   state.mode=m; document.querySelectorAll('.seg.mode button').forEach(b=>b.classList.toggle('on',b.dataset.mode===m));
-  const net = m==='network'; $('#m1').hidden=net; $('#m2').hidden=!net; $('#legend').style.display = net?'none':'';
-  $('#d-close').click();
-  if (popup) {
-    ['lst-glow','lst-dot','lst-label'].forEach(l => map.setLayoutProperty(l,'visibility',net?'visible':'none'));
-    map.setLayoutProperty('labels','visibility',net?'none':'visible'); map.setLayoutProperty('heat','visibility','none');
-    map.setPaintProperty('nbhd-fill','fill-opacity', net ? ['case',['boolean',['get','residential'],true],['interpolate',['linear'],['coalesce',['get','score'],0],0,0.12,100,0.38],0.04]
-                                                        : ['case',['boolean',['feature-state','hover'],false],0.9,['boolean',['get','residential'],true],['interpolate',['linear'],['coalesce',['get','score'],0],0,0.35,100,0.88],0.08]);
-    if(!net){ setLayer(state.layer); }
-  }
+  const net = m==='network'; $('#m1').hidden=net; $('#m2').hidden=!net;
+  $('#d-close').click(); $('#chat').classList.toggle('min', net);
+  applyLayers();
   if (net && !state.net) loadNetwork();
 }
 async function loadNetwork(){
@@ -504,30 +512,41 @@ function renderNetPills(sm){
 }
 /* --- network graph on canvas: you in the center, rings by degree --- */
 function drawNet(){
-  const cv=$('#net'), dpr=window.devicePixelRatio||1, W=cv.clientWidth||332, H=270; cv.width=W*dpr; cv.height=H*dpr; const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
+  const cv=$('#net'), dpr=window.devicePixelRatio||1, W=cv.clientWidth||332, H=300; cv.width=W*dpr; cv.height=H*dpr; const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
   const g=state.net, cx=W/2, cy=H/2; const d1=g.nodes.filter(n=>n.degree===1), d2=g.nodes.filter(n=>n.degree===2);
   const pos={}; pos[g.user]=[cx,cy];
-  d1.forEach((n,i)=>{ const a=-Math.PI/2 + i*2*Math.PI/d1.length; pos[n.id]=[cx+78*Math.cos(a), cy+78*Math.sin(a)]; });
-  d2.forEach((n,i)=>{ const a=-Math.PI/2 + (i+0.5)*2*Math.PI/d2.length; pos[n.id]=[cx+124*Math.cos(a), cy+118*Math.sin(a)]; });
+  d1.forEach((n,i)=>{ const a=-Math.PI/2 + i*2*Math.PI/d1.length; pos[n.id]=[cx+82*Math.cos(a), cy+78*Math.sin(a)]; });
+  d2.forEach((n,i)=>{ const a=-Math.PI/2 + (i+0.5)*2*Math.PI/d2.length; pos[n.id]=[cx+136*Math.cos(a), cy+128*Math.sin(a)]; });
   g._pos=pos; ctx.clearRect(0,0,W,H);
-  ctx.strokeStyle='rgba(255,255,255,0.06)'; ctx.lineWidth=1; [78,122].forEach(r=>{ ctx.beginPath(); ctx.ellipse(cx,cy,r+2,r-2,0,0,Math.PI*2); ctx.stroke(); });
-  ctx.strokeStyle='rgba(255,255,255,0.14)'; for (const l of g.links){ const a=pos[l.source], b=pos[l.target]; if(!a||!b) continue; ctx.beginPath(); ctx.moveTo(a[0],a[1]); ctx.lineTo(b[0],b[1]); ctx.stroke(); }
-  for (const n of g.nodes){ const [x,y]=pos[n.id]; const r = n.degree===0?11 : n.degree===1?7:5;
-    if (n.verified){ ctx.beginPath(); ctx.arc(x,y,r+3,0,Math.PI*2); ctx.strokeStyle='#199e70'; ctx.lineWidth=2; ctx.stroke(); }
+  const path = state.netPath||[], onPath = new Set(path), pathEdges = new Set(); for(let i=1;i<path.length;i++){ pathEdges.add(path[i-1]+'|'+path[i]); pathEdges.add(path[i]+'|'+path[i-1]); }
+  const byId = Object.fromEntries(g.nodes.map(n=>[n.id,n]));
+  ctx.strokeStyle='rgba(255,255,255,0.05)'; ctx.lineWidth=1; [[82,78],[136,128]].forEach(([rx,ry])=>{ ctx.beginPath(); ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2); ctx.stroke(); });
+  const curve = (a,b,w,col) => { const mx=(a[0]+b[0])/2, my=(a[1]+b[1])/2, dx=b[0]-a[0], dy=b[1]-a[1], k=0.18; ctx.beginPath(); ctx.moveTo(a[0],a[1]); ctx.quadraticCurveTo(mx-dy*k, my+dx*k, b[0],b[1]); ctx.lineWidth=w; ctx.strokeStyle=col; ctx.stroke(); };
+  for (const l of g.links){ const a=pos[l.source], b=pos[l.target]; if(!a||!b) continue; if(pathEdges.has(l.source+'|'+l.target)) continue;
+    const toYou = l.source===g.user || l.target===g.user; const ver = (byId[l.source]?.verified && l.target===g.user) || (byId[l.target]?.verified && l.source===g.user);
+    curve(a,b, toYou?1.4:0.8, path.length ? 'rgba(255,255,255,0.06)' : ver ? 'rgba(25,158,112,0.55)' : toYou ? 'rgba(57,135,229,0.45)' : 'rgba(255,255,255,0.13)'); }
+  for(let i=1;i<path.length;i++){ const a=pos[path[i-1]], b=pos[path[i]]; if(a&&b) curve(a,b,3,'#f0895c'); }
+  for (const n of g.nodes){ const [x,y]=pos[n.id]; const r = n.degree===0?12 : n.degree===1?7.5:5.5; const dim = path.length && !onPath.has(n.id);
+    ctx.globalAlpha = dim ? 0.35 : 1;
+    if (onPath.has(n.id) && n.degree){ ctx.beginPath(); ctx.arc(x,y,r+4.5,0,Math.PI*2); ctx.fillStyle='rgba(240,137,92,0.35)'; ctx.fill(); }
+    if (n.verified){ ctx.beginPath(); ctx.arc(x,y,r+2.5,0,Math.PI*2); ctx.strokeStyle='#199e70'; ctx.lineWidth=2; ctx.stroke(); }
     ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fillStyle = n.degree===0?'#fff': n.is_member?'#3987e5':'#2a2c33'; ctx.fill();
-    if(!n.is_member && n.degree){ ctx.strokeStyle='#7f7e76'; ctx.lineWidth=1.2; ctx.stroke(); }
-    if (n.listings.length){ ctx.beginPath(); ctx.arc(x+r*0.75,y-r*0.75,3.2,0,Math.PI*2); ctx.fillStyle='#d95926'; ctx.fill(); ctx.strokeStyle='#14151a'; ctx.lineWidth=1; ctx.stroke(); }
-    if (n.degree===1){ ctx.fillStyle='rgba(242,242,239,0.85)'; ctx.font='500 9.5px Inter, sans-serif'; ctx.textAlign='center'; ctx.fillText(n.name.split(' ')[0], x, y+r+11); }
+    if(!n.is_member && n.degree){ ctx.strokeStyle='#8a897f'; ctx.lineWidth=1.2; ctx.stroke(); }
+    if (n.listings.length){ ctx.beginPath(); ctx.arc(x+r*0.8,y-r*0.8,3.4,0,Math.PI*2); ctx.fillStyle='#d95926'; ctx.fill(); ctx.strokeStyle='#14151a'; ctx.lineWidth=1; ctx.stroke(); }
+    if (n.degree===1 || onPath.has(n.id)){ ctx.fillStyle='rgba(242,242,239,0.9)'; ctx.font=(onPath.has(n.id)?'600 ':'500 ')+'9.5px Inter, sans-serif'; ctx.textAlign='center'; ctx.fillText(n.name.split(' ')[0], x, y+r+11); }
+    ctx.globalAlpha = 1;
   }
   ctx.fillStyle='#0f1013'; ctx.font='700 9px Inter'; ctx.textAlign='center'; ctx.fillText('YOU', cx, cy+3);
-  cv.onmousemove = e => { const n=hitNode(e); const t=$('#net-tip'); if(!n||n.degree===0){ t.style.display='none'; return; }
-    const rect=cv.getBoundingClientRect(); t.style.display='block'; t.style.left=(e.clientX-rect.left+14)+'px'; t.style.top=(e.clientY-rect.top+ $('#net').offsetTop - 8)+'px';
-    t.innerHTML=`<b>${esc(n.name)}</b><div style="color:var(--text-2)">${esc(n.headline)}</div><div style="color:var(--text-3)">${n.degree===1?'1st':'2nd via '+esc(n.via.map(v=>state.net.nodes.find(x=>x.id===v)?.name.split(' ')[0]).join(', '))} · ${n.is_member?'member':'not on platform'}${n.in_sf?' · ✓ SF':''}${n.listings.length?' · 🏠 has a place':''}</div>`; };
+  cv.onmousemove = e => { const n=hitNode(e); const t=$('#net-tip'); cv.style.cursor = n&&n.degree?'pointer':'default'; if(!n||n.degree===0){ t.style.display='none'; return; }
+    const rect=cv.getBoundingClientRect(); t.style.display='block'; t.style.left=Math.min(e.clientX-rect.left+14, rect.width-200)+'px'; t.style.top=(e.clientY-rect.top+ $('#net').offsetTop - 8)+'px';
+    t.innerHTML=`<b>${esc(n.name)}</b><div style="color:var(--text-2)">${esc(n.headline)}</div><div style="color:var(--text-3)">${n.degree===1?'1st degree':'2nd · via '+esc(n.via.map(v=>byId[v]?.name.split(' ')[0]).join(', '))} · ${n.is_member?'member':'not on platform'}${n.verified?' · ✓ verified':''}${n.in_sf?' · ✓ SF':''}${n.listings.length?' · 🏠 has a place':''}</div>`; };
   cv.onmouseleave = () => $('#net-tip').style.display='none';
-  cv.onclick = e => { const n=hitNode(e); if(n && n.degree) openPerson(n); };
+  cv.onclick = e => { const n=hitNode(e); if(n && n.degree) openPerson(n); else if(!n){ state.netPath=[]; drawNet(); } };
 }
+function setPath(ids){ state.netPath = ids||[]; if(state.net) drawNet(); }
 function hitNode(e){ const cv=$('#net'), rect=cv.getBoundingClientRect(), x=e.clientX-rect.left, y=e.clientY-rect.top; let best=null, bd=14; for (const n of state.net.nodes){ const p=state.net._pos[n.id]; const d=Math.hypot(p[0]-x,p[1]-y); if(d<bd){bd=d;best=n;} } return best; }
 function openPerson(n){
+  setPath([state.net.user, ...n.via, n.id]);
   document.body.classList.add('drawer-open'); $('#drawer').classList.add('open');
   $('#d-name').textContent=n.name; $('#d-sub').textContent=n.headline;
   const via = n.degree===1 ? 'Direct connection' : 'Via ' + n.via.map(v=>state.net.nodes.find(x=>x.id===v)?.name).join(' → ');
@@ -553,7 +572,7 @@ async function loadFunnel(){
 }
 async function openListing(id){
   const l = state.listings.find(x=>x.id===id); if(!l) return;
-  state.selListing=id; document.querySelectorAll('#lst .lrow').forEach(r=>r.classList.toggle('sel',+r.dataset.id===id));
+  state.selListing=id; document.querySelectorAll('#lst .lrow').forEach(r=>r.classList.toggle('sel',+r.dataset.id===id)); setPath(l.reach.path_ids);
   if (popup){ state.listings.forEach(x=>map.setFeatureState({source:'lst',id:x.id},{sel:x.id===id})); map.flyTo({center:[l.lon,l.lat], zoom:Math.max(map.getZoom(),13), padding:{left:420,right:440}, duration:800}); }
   document.body.classList.add('drawer-open'); $('#drawer').classList.add('open');
   $('#d-name').textContent=l.title; $('#d-sub').textContent=`${l.neighborhood} · $${l.rent}/mo · ${l.room_type} · move-in ${l.move_in}`;
@@ -596,24 +615,35 @@ function renderReach(l, chat){
   };
 }
 async function loadNegotiation(l){
-  const box=$('#neg-box'); box.innerHTML = `<div class="sec-title" style="margin-top:16px">Negotiate with ${esc(l.owner_name||'the owner')}</div><div id="adv"></div><div class="neg" id="neg"></div>
+  const box=$('#neg-box'); box.innerHTML = `<div class="sec-title" style="margin-top:16px">Your advisor</div><div id="adv"><div class="note">computing…</div></div>
+    <div class="sec-title" style="margin-top:14px">Chat with ${esc(l.owner_name||'the owner')}</div><div class="neg" id="neg"></div>
     <form id="neg-f" class="row"><input type="text" id="neg-i" placeholder="Ask a question or make an offer…" autocomplete="off"><input type="text" id="neg-o" placeholder="$ offer" style="width:84px"><button class="btn primary">Send</button></form>
-    <div class="note">Advisor rules: perfect = neighborhood ≥ 60 on your weights, rent ≤ min(budget, fair median +5%), all must-haves. It tells you to counter or walk away otherwise.</div>`;
-  const h = await api(`/api/net/negotiation/${l.id}?user_id=${encodeURIComponent(state.user)}`);
-  h.messages.forEach(m => addNeg(m.role, m.content, m.offer)); if (h.verdict) renderAdvisor({...h.verdict, asking:h.negotiation?.owner_last_offer, fair_mid:null});
+    <div class="note">Perfect = neighborhood ≥ 60 on your weights, rent ≤ min(budget, fair median +5%), all must-haves. Otherwise the advisor tells you what to offer, and the price to never go above.</div>`;
+  const [h, adv] = await Promise.all([api(`/api/net/negotiation/${l.id}?user_id=${encodeURIComponent(state.user)}`), api(`/api/net/advice/${l.id}?user_id=${encodeURIComponent(state.user)}`)]);
+  renderAdvisor(adv, !h.messages.length);
+  h.messages.forEach(m => addNeg(m.role, m.content, m.offer));
   if (!h.messages.length) addNeg('owner', `Hi! I'm ${l.owner_name||'the owner'} — happy to answer questions about the place. Asking $${l.rent}/mo.`, null);
   $('#neg-f').onsubmit = async e => { e.preventDefault(); const t=$('#neg-i').value.trim(), o=parseInt($('#neg-o').value.replace(/\D/g,''))||null; if(!t&&!o) return;
     addNeg('user', t||`Offer $${o}`, o); $('#neg-i').value=''; $('#neg-o').value=''; const th=addNeg('owner','typing…',null); th.classList.add('thinking');
     try{ const r = await api(`/api/net/negotiation/${l.id}/message`,{user_id:state.user, text:t||`I'd like to offer $${o}/month.`, offer:o});
-      th.remove(); addNeg('owner', r.owner.reply, r.owner.accepted?null:r.owner.price); renderAdvisor(r.advisor); if(r.owner.accepted) toast('Deal agreed at $'+r.owner.price+' 🎉'); loadFunnel();
+      th.remove(); addNeg('owner', r.owner.reply, r.owner.accepted?null:r.owner.price); renderAdvisor(r.advisor, false); if(r.owner.accepted) toast('Deal agreed at $'+r.owner.price+' 🎉'); loadFunnel();
     }catch(err){ th.textContent='error: '+err.message; } };
 }
 function addNeg(role, text, offer){ const m=document.createElement('div'); m.className='msg '+(role==='user'?'u':'o'); m.textContent=text; if(offer){ const s=document.createElement('span'); s.className='of'; s.textContent=(role==='user'?'your offer ':'their price ')+'$'+offer; m.appendChild(s); } $('#neg').appendChild(m); m.scrollIntoView({block:'nearest'}); return m; }
-function renderAdvisor(a){
-  const v=a.verdict; const txt = v==='ACCEPT'?'Take it':v==='COUNTER'?`Counter at $${a.suggested}`:'Walk away';
-  $('#adv').innerHTML = `<div class="advisor"><span class="vd ${v}">${v.replace('_',' ')} · ${txt}</span>${a.perfect?'<span class="tag">perfect match</span>':''}
-    <div class="grid"><div><b>${Math.round(a.fit)}</b><small>fit / 100</small></div><div><b>$${a.fair_low}–${a.fair_high}</b><small>fair range</small></div><div><b>$${a.suggested}</b><small>${v==='COUNTER'?'suggested counter':'target price'}</small></div></div>
-    <div class="why">${esc(a.reason||'')}</div>${v==='COUNTER'?`<div class="row" style="margin-top:8px"><button class="btn" onclick="$('#neg-o').value='${a.suggested}';$('#neg-i').value='Would you take $${a.suggested}? I can sign this week.'">Use this counter</button></div>`:''}</div>`;
+function renderAdvisor(a, opening){
+  const v=a.verdict; const P=state.profile||{budget:a.budget};
+  const head = v==='ACCEPT' ? `Take it at $${a.asking}` : v==='COUNTER' ? `Offer $${a.suggested}` : `Walk away above $${a.walk_away_above}`;
+  const vals=[a.fair_low,a.fair_high,a.asking,a.budget,a.suggested,a.walk_away_above].filter(x=>x!=null); const lo=Math.min(...vals)*0.93, hi=Math.max(...vals)*1.06; const pct=x=>((x-lo)/(hi-lo)*100).toFixed(1)+'%';
+  $('#adv').innerHTML = `<div class="advisor ${v}">
+    <div class="row" style="justify-content:space-between;align-items:flex-start"><div><span class="vd ${v}">${v.replace('_',' ')}</span>${a.perfect?'<span class="tag">perfect match</span>':''}<div class="big">${head}</div><div class="plan">${esc(a.plan||'')}</div></div><div class="fitsm"><b>${Math.round(a.fit)}</b><small>fit</small></div></div>
+    <div class="ladder"><div class="fair" style="left:${pct(a.fair_low)};width:calc(${pct(a.fair_high)} - ${pct(a.fair_low)})"></div>
+      <div class="mk ask" style="left:${pct(a.asking)}"><i></i><span>${opening?'asking':'their price'} $${a.asking}</span></div>
+      <div class="mk off" style="left:${pct(a.suggested)}"><i></i><span>${v==='ACCEPT'?'accept':'offer'} $${a.suggested}</span></div>
+      <div class="mk bud" style="left:${pct(a.budget)}"><i></i><span class="b">budget $${a.budget}</span></div>
+      <div class="mk max" style="left:${pct(a.walk_away_above)}"><i></i><span class="b">never above $${a.walk_away_above}</span></div>
+      <div class="fl" style="left:${pct(a.fair_low)}">fair $${a.fair_low}</div><div class="fl r" style="left:${pct(a.fair_high)}">$${a.fair_high}</div></div>
+    <div class="why">${esc(a.reason||'')}</div>
+    ${v==='COUNTER'?`<div class="row" style="margin-top:8px"><button class="btn" onclick="$('#neg-o').value='${a.suggested}';$('#neg-i').value='Would you take $${a.suggested}? I can sign this week.';$('#neg-i').focus()">Use this offer</button></div>`:''}</div>`;
 }
 /* invite link landing (?join=TOKEN) */
 (async () => { const t = new URLSearchParams(location.search).get('join'); if(!t) return; try{ const r = await api(`/api/net/join/${t}`,{}); toast(`${r.owner} joined via the invite link — chat unlocked`); history.replaceState({},'',location.pathname); setMode('network'); }catch(e){ toast('Invite link invalid'); } })();
