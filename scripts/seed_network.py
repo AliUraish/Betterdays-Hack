@@ -57,7 +57,14 @@ def main():
             pid = f"p{i+1:02d}"
             people.append((pid, f"{f} {l}", f"{role} at {comp}", comp, f"https://linkedin.com/in/{f.lower()}-{l.lower()}", f"@{f.lower()}{l.lower()[:3]}",
                            loc, f"{f.lower()}.{l.lower()}@example.com", member, random.choice(NBHDS_ROOM) if "S" in loc or "9" in loc else None, colors[i % 8]))
-        c.executemany("INSERT INTO people VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", people)
+        # owners of "shared"/web listings become real people in the network (members, reachable via a bridge)
+        extra = [("p41","Dana Kowalski","Nurse at UCSF","UCSF","https://linkedin.com/in/dana-kowalski","@danak","San Francisco, CA","dana.k@example.com",True,"Castro","#199e70"),
+                 ("p42","Jordan Lin","Firmware Engineer at Cruise","Cruise","https://linkedin.com/in/jordan-lin","@jlin","SF","j.lin@example.com",True,"Potrero Hill","#c98500"),
+                 ("p43","Riley Moss","Teacher at SF Unified","SF Unified","https://linkedin.com/in/riley-moss","@rmoss","Noe Valley, SF","r.moss@example.com",True,"Noe Valley","#d55181"),
+                 ("p44","Casey Tran","Barista / illustrator","Ritual Coffee","https://linkedin.com/in/casey-tran","@caseyt","Lower Haight, SF","lh.flat@example.com",True,"Lower Haight","#9085e9"),
+                 ("p45","Luis Ortega","Bus operator at SFMTA","SFMTA","https://linkedin.com/in/luis-ortega","@luiso","Excelsior 94112","exc.room@example.com",True,"Excelsior","#e66767")]
+        people += extra
+        c.cursor().executemany("INSERT INTO people VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", people)
         # --- connections: you -> 14 first-degree; each first-degree -> 2-4 others (2nd degree); some mutual (verified)
         edges = set()
         first = [f"p{i:02d}" for i in range(1, 15)]
@@ -69,9 +76,11 @@ def main():
             for q in random.sample(others, random.randint(2, 4)):
                 edges.add((p, q))
                 if random.random() < 0.6: edges.add((q, p))
+        for a, b in (("p01","p41"),("p41","p01"),("p02","p42"),("p03","p43"),("p43","p03"),("p05","p44"),("p09","p45"),("p45","p09")):
+            edges.add((a, b))                      # bridges to the new listing owners (some mutual = verified)
         for _ in range(12):  # a few links among 2nd-degree people
             a, b = random.sample(others, 2); edges.add((a, b))
-        c.executemany("INSERT INTO connections (person_a, person_b) VALUES (%s,%s) ON CONFLICT DO NOTHING", list(edges))
+        c.cursor().executemany("INSERT INTO connections (person_a, person_b) VALUES (%s,%s) ON CONFLICT DO NOTHING", list(edges))
         # --- listings
         def L(owner, source, nbhd, rent, room, feats, title, desc, shared_by=None, url=None, owner_email=None, owner_name=None):
             lat, lon = nb[nbhd]; lat += random.uniform(-0.003, 0.003); lon += random.uniform(-0.004, 0.004)
@@ -84,15 +93,15 @@ def main():
             L("p17", "member", "Bernal Heights", 1800, "room", F(private_bath=True, parking=True), "Master bedroom w/ private bath", "Top of Bernal, views, parking spot included."),
             L("p22", "member", "Hayes Valley", 2750, "studio", F(furnished=True), "Furnished studio, 6-month lease", "Walk to everything. Available Oct 1."),
             L("p31", "member", "Outer Sunset", 1250, "room", F(pets=True, laundry=True), "Room 4 blocks from Ocean Beach", "Surfers welcome. Dog-friendly."),
-            L(None, "shared", "Castro", 1900, "room", F(laundry=True), "Room in 2BR, Castro", "A friend of Priya is moving out.", shared_by="p01", owner_email="dana.k@example.com", owner_name="Dana K."),
-            L(None, "shared", "Potrero Hill", 1700, "room", F(parking=True), "Room, Potrero Hill, parking", "Shared by Marcus — his coworker's place.", shared_by="p02", owner_email="j.lin@example.com", owner_name="Jordan Lin"),
-            L(None, "shared", "Noe Valley", 2100, "room", F(pets=True, private_bath=True), "Quiet room in Noe, cat ok", "Elena's neighbor is renting a room.", shared_by="p03", owner_email="r.moss@example.com", owner_name="Riley Moss"),
-            L(None, "url", "Lower Haight", 1550, "room", F(), "Room in Lower Haight flat", "Imported from craigslist.", url="https://sfbay.craigslist.org/sfc/roo/d/room-lower-haight/770001.html", owner_email="lh.flat@example.com", owner_name="Listing contact"),
+            L("p41", "shared", "Castro", 1900, "room", F(laundry=True), "Room in 2BR, Castro", "Priya's friend Dana is moving out of the other room.", shared_by="p01"),
+            L("p42", "shared", "Potrero Hill", 1700, "room", F(parking=True), "Room, Potrero Hill, parking", "Shared by Marcus — his coworker Jordan's place.", shared_by="p02"),
+            L("p43", "shared", "Noe Valley", 2100, "room", F(pets=True, private_bath=True), "Quiet room in Noe, cat ok", "Elena's neighbor Riley is renting a room.", shared_by="p03"),
+            L("p44", "url", "Lower Haight", 1550, "room", F(), "Room in Lower Haight flat", "Found on craigslist — turns out Sofia knows the lister.", url="https://sfbay.craigslist.org/sfc/roo/d/room-lower-haight/770001.html", shared_by="p05"),
             L(None, "url", "Russian Hill", 3200, "1br", F(laundry=True), "1BR with bay view", "Imported from zillow.", url="https://www.zillow.com/homedetails/russian-hill-1br/2001", owner_email="rh.owner@example.com", owner_name="Owner"),
-            L(None, "url", "Excelsior", 1200, "room", F(pets=True, parking=True), "Cheap room, Excelsior", "Imported from craigslist.", url="https://sfbay.craigslist.org/sfc/roo/d/excelsior-room/770002.html", owner_email="exc.room@example.com", owner_name="Listing contact"),
+            L("p45", "url", "Excelsior", 1200, "room", F(pets=True, parking=True), "Cheap room, Excelsior", "Found on craigslist — Hannah's cousin Luis.", url="https://sfbay.craigslist.org/sfc/roo/d/excelsior-room/770002.html", shared_by="p09"),
             L(None, "url", "Marina", 2400, "room", F(furnished=True, laundry=True), "Furnished room, Marina", "Imported from facebook marketplace.", url="https://www.facebook.com/marketplace/item/8800", owner_email="marina.rm@example.com", owner_name="Listing contact"),
         ]
-        c.executemany("""INSERT INTO listings (owner_id, owner_name, owner_email, source, url, title, neighborhood, address, lat, lon, rent, room_type, move_in, features, description, reservation_price, shared_by)
+        c.cursor().executemany("""INSERT INTO listings (owner_id, owner_name, owner_email, source, url, title, neighborhood, address, lat, lon, rent, room_type, move_in, features, description, reservation_price, shared_by)
                          VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""", rows)
         c.execute("UPDATE listings l SET owner_name = p.name, owner_email = p.email FROM people p WHERE l.owner_id = p.id")
         c.execute("""INSERT INTO user_profile (user_id, name, linkedin_url, x_handle, budget, room_type, move_in, must_haves, weights)
