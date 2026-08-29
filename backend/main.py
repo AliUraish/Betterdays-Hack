@@ -231,6 +231,49 @@ def _chat_openai(system, history):
         resp = client.responses.create(model=OPENAI_MODEL, previous_response_id=resp.id, input=outputs, tools=tools)
     return resp.output_text or "", trace, state["highlight"], resp.model
 
+KEYWORDS = {
+    "cleanliness": ["clean", "tidy", "trash", "garbage", "dirty", "litter"], "graffiti": ["graffiti", "tagging", "vandal"],
+    "street_safety": ["safe", "safety", "encampment", "homeless", "tent"], "quiet": ["quiet", "noise", "noisy", "peaceful", "calm", "sleep"],
+    "parking": ["parking", "car", "drive", "garage"], "infrastructure": ["streetlight", "pothole", "sidewalk", "sewer", "tree", "infrastructure"],
+    "responsiveness": ["fix", "fixes", "respond", "responsive", "fast", "quick", "city"],
+}
+def _chat_rules(history):
+    """No-LLM fallback: keyword weights + `near` detection -> recommend/compare, templated reply."""
+    import re
+    q = history[-1]["content"]; ql = q.lower()
+    names = list(A.neighborhoods()); mentioned = sorted([n for n in names if n.lower() in ql], key=lambda n: ql.index(n.lower()))
+    trace, highlight = [], []
+    if len(mentioned) >= 2 or " vs " in ql or "compare" in ql:
+        a, b = (mentioned + [None, None])[:2]
+        if a and b:
+            out = A.compare(a, b); trace.append({"tool": "compare", "input": {"a": a, "b": b}, "output": _slim("compare", out)}); highlight = [a, b]
+            d = out["score_delta_a_minus_b"]; better = out["better_a"]; worse = out["better_b"]
+            lines = [f"**{a}** scores {out['a']['overall_score_default_weights']} vs **{b}** {out['b']['overall_score_default_weights']} (default weights)."]
+            lines += [f"• {a} is better on: {', '.join(A.DIMENSIONS[x]['label'].lower() for x in better) or 'nothing'}", f"• {b} is better on: {', '.join(A.DIMENSIONS[x]['label'].lower() for x in worse) or 'nothing'}"]
+            lines.append(f"Median close time: {out['a']['p50_hours']}h vs {out['b']['p50_hours']}h.")
+            return "\n".join(lines), trace, highlight, "rules-fallback", None
+    weights = {k: 0 for k in A.DIMENSIONS}
+    for k, kws in KEYWORDS.items():
+        if any(re.search(r"\b" + w + r"\b", ql) for w in kws): weights[k] = 5
+    if not any(weights.values()): weights = dict(A.DEFAULT_WEIGHTS)
+    near = None
+    m = re.search(r"near (the )?([a-z' /.]+?)(,|\.|$| and | with | that | where )", ql)
+    if m: near = A.resolve_name(m.group(2).strip())
+    if not near and mentioned: near = mentioned[0]
+    out = A.recommend(weights, near, 3, 3.0)
+    trace.append({"tool": "recommend", "input": {"weights": weights, "near": near, "top_n": 3}, "output": _slim("recommend", out)})
+    highlight = [r["name"] for r in out["results"]]
+    if not out["results"]:
+        return "I couldn't find neighborhoods matching that radius — try a wider area.", trace, [], "rules-fallback", weights
+    pri = [A.DIMENSIONS[k]["label"].lower() for k, v in weights.items() if v >= 5][:3]
+    lines = [f"Based on {', '.join(pri) if pri else 'a balanced mix'}{' near ' + near if near else ''}, here are the best fits:"]
+    for r in out["results"]:
+        top = sorted(r["scores"].items(), key=lambda kv: -kv[1])[:2]
+        lines.append(f"**{r['rank']}. {r['name']}** — {r['score']:.0f}/100" + (f", {r['distance_km']} km away" if r.get("distance_km") is not None else "") +
+                     f". Strongest: {', '.join(A.DIMENSIONS[k]['label'].lower() + ' ' + str(int(v)) for k, v in top)}; median close time {r['p50_hours']}h.")
+    lines.append("(Answered from ClickHouse directly — the language model is offline, so this is a rules-based summary.)")
+    return "\n".join(lines), trace, highlight, "rules-fallback", weights
+
 def _chat_anthropic(system, history):
     import anthropic
     client = anthropic.Anthropic()
@@ -255,16 +298,25 @@ def _chat_anthropic(system, history):
 @app.post("/api/chat", operation_id="chat", tags=["agent"], summary="Ask the neighborhood guide (LLM + tools)")
 def chat(body: ChatIn):
     provider = "openai" if os.getenv("OPENAI_API_KEY") else "anthropic" if os.getenv("ANTHROPIC_API_KEY") else None
-    if not provider:
-        raise HTTPException(503, "no LLM key configured (OPENAI_API_KEY or ANTHROPIC_API_KEY)")
     history = [{"role": m.role, "content": m.content} for m in body.messages if m.role in ("user", "assistant")]
+    if not provider: provider = "rules"
     if not history or history[-1]["role"] != "user":
         raise HTTPException(400, "last message must be from the user")
     system = SYSTEM
     if body.weights:
         system += f"\n\nThe user's current slider weights on the map are: {json.dumps(body.weights.model_dump())}. Start from these unless they say otherwise."
-    reply, trace, highlight, model = (_chat_openai if provider == "openai" else _chat_anthropic)(system, history)
-    weights = next((t["input"].get("weights") for t in trace if t["tool"] == "recommend"), None)
+    rule_weights = None
+    try:
+        if provider == "rules": raise RuntimeError("no LLM key configured")
+        reply, trace, highlight, model = (_chat_openai if provider == "openai" else _chat_anthropic)(system, history)
+    except Exception as e:
+        print("LLM chat failed, using rules fallback:", str(e)[:200])
+        if provider == "openai" and os.getenv("ANTHROPIC_API_KEY"):
+            try: reply, trace, highlight, model = _chat_anthropic(system, history); provider = "anthropic"
+            except Exception as e2: print("anthropic fallback failed:", str(e2)[:200]); reply, trace, highlight, model, rule_weights = _chat_rules(history); provider = "rules"
+        else:
+            reply, trace, highlight, model, rule_weights = _chat_rules(history); provider = "rules"
+    weights = next((t["input"].get("weights") for t in trace if t["tool"] == "recommend"), None) or rule_weights
     if PG_URL:
         try:
             with pg() as c:
