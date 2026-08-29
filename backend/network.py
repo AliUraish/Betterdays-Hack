@@ -18,6 +18,9 @@ def _pg_url():
     return (f"postgresql://{os.getenv('PGUSER','postgres')}:{quote(os.getenv('PGPASSWORD',''), safe='')}"
             f"@{os.getenv('PGHOST')}:{os.getenv('PGPORT','5432')}/{os.getenv('PGDATABASE','postgres')}?sslmode=require")
 def pg(): return psycopg.connect(_pg_url(), row_factory=dict_row)
+try:
+    with pg() as _c: _c.execute("ALTER TABLE negotiations ADD COLUMN IF NOT EXISTS via_bridge text, ADD COLUMN IF NOT EXISTS bridge_discount int DEFAULT 0")
+except Exception as _e: print("negotiations alter skipped:", _e)
 
 SF_PAT = re.compile(r"\b(san francisco|sf|bay area|94\d{3}|sunset|mission|richmond district)\b|🌉", re.I)
 def in_sf(loc): return bool(loc and SF_PAT.search(loc))
@@ -201,6 +204,17 @@ def join(token: str):
     track(inv["user_id"], "invite_accepted", inv["listing_id"])
     return {"ok": True, "listing_id": inv["listing_id"], "owner": l["owner_name"]}
 
+def bridge_for(listing, user_id):
+    """The connection who links you to this owner (None if direct or unreachable)."""
+    people, adj, directed = load_graph()
+    gid = user_id if user_id in people else "demo"
+    dist, parent = bfs(adj, gid, 3)
+    r = reach(listing, dist, parent, people)
+    ids = r.get("path_ids") or []
+    if len(ids) >= 3: return {"id": ids[1], "name": people[ids[1]]["name"]}
+    if listing.get("shared_by") and listing["shared_by"] in people: return {"id": listing["shared_by"], "name": people[listing["shared_by"]]["name"]}
+    return None
+
 # ---------------------------------------------------------------- negotiation: owner persona + advisor
 class NegMsg(BaseModel):
     user_id: str = "demo"; text: str; offer: Optional[int] = None
@@ -214,24 +228,29 @@ def _llm_json(instructions, user_text, schema_name, schema):
                                 text={"format": {"type": "json_schema", "name": schema_name, "schema": schema, "strict": True}})
     return json.loads(r.output_text)
 
-def advise(listing, prof, weights, history, owner_offer):
+def advise(listing, prof, weights, history, owner_offer, bridge=None, bridge_used=False):
     f = fit_score(listing, prof, weights); budget = prof["budget"] or 1800
     ask = owner_offer or listing["rent"]
     target = min(budget, int(f["fair_mid"] * 0.97)); walk = min(budget, int(f["fair_high"]))
     if f["perfect"] and ask <= min(budget, f["fair_mid"] * 1.05): verdict, suggested = "ACCEPT", ask
     elif ask <= min(budget, f["fair_mid"]): verdict, suggested = "ACCEPT", ask
-    elif ask <= walk and f["nbhd_score"] >= 45 and f["type_ok"] and not f["missing"]: verdict, suggested = "COUNTER", max(target, min(ask - 100, int(ask * 0.94)))
+    elif ask <= walk and f["type_ok"] and not f["missing"]: verdict, suggested = "COUNTER", max(target, min(ask - 100, int(ask * 0.94)))
     else: verdict, suggested = "WALK_AWAY", target
+    if verdict == "WALK_AWAY" and bridge and not bridge_used and ask <= walk * 1.35 and f["type_ok"]:
+        verdict, suggested = "NEGOTIATE_VIA", target            # a connection can put in a word before you give up
     why = []
     why.append(f"neighborhood scores {f['nbhd_score']:.0f}/100 on your weights")
     why.append(f"${ask} vs fair range ${f['fair_low']}–${f['fair_high']} (median ${f['fair_mid']})")
     if f["over_budget"]: why.append(f"${f['over_budget']} over your ${budget} budget")
     if f["missing"]: why.append("missing must-haves: " + ", ".join(f["missing"]))
     if not f["type_ok"]: why.append(f"it's a {listing['room_type']}, you want a {prof['room_type']}")
-    plan = {"ACCEPT": f"Take it at ${ask}.", "COUNTER": f"Offer ${suggested}; settle anywhere up to ${walk}.", "WALK_AWAY": f"Don't pay more than ${walk} here — aim for ${target}."}[verdict]
+    first = (bridge or {}).get("name", "").split(" ")[0] if bridge else None
+    plan = {"ACCEPT": (f"${ask} is under the fair median (${f['fair_mid']}) and within budget — no need to haggle." if ask <= f["fair_mid"] else f"Fair price for a place that fits this well — take it at ${ask}."),
+            "NEGOTIATE_VIA": f"${ask} is too high on its own. Ask {first} to put in a word, then offer ${target}. If it doesn't come down to ${walk}, walk away.", "COUNTER": f"Offer ${suggested}; settle anywhere up to ${walk}.", "WALK_AWAY": f"Don't pay more than ${walk} here — aim for ${target}."}[verdict]
     return {"fit": f["fit"], "nbhd_score": f["nbhd_score"], "fair_low": f["fair_low"], "fair_mid": f["fair_mid"], "fair_high": f["fair_high"],
             "asking": ask, "budget": budget, "target": target, "suggested": suggested, "walk_away_above": walk, "verdict": verdict,
-            "reason": "; ".join(why), "plan": plan, "perfect": f["perfect"], "missing": f["missing"]}
+            "reason": "; ".join(why), "plan": plan, "perfect": f["perfect"], "missing": f["missing"],
+            "bridge": bridge, "bridge_used": bridge_used}
 
 @router.get("/advice/{listing_id}", operation_id="advice", summary="Advisor's opening plan for a listing: what to offer, ceiling, verdict")
 def advice(listing_id: int, user_id: str = "demo"):
@@ -239,8 +258,9 @@ def advice(listing_id: int, user_id: str = "demo"):
         l = c.execute("SELECT * FROM listings WHERE id=%s", (listing_id,)).fetchone()
         if not l: raise HTTPException(404, "listing not found")
         prof = c.execute("SELECT * FROM user_profile WHERE user_id=%s", (user_id,)).fetchone() or c.execute("SELECT * FROM user_profile WHERE user_id='demo'").fetchone()
-        n = c.execute("SELECT owner_last_offer FROM negotiations WHERE user_id=%s AND listing_id=%s ORDER BY id DESC LIMIT 1", (user_id, listing_id)).fetchone()
-    return advise(l, prof, prof["weights"] or A.DEFAULT_WEIGHTS, [], (n or {}).get("owner_last_offer") or l["rent"])
+        n = c.execute("SELECT owner_last_offer, via_bridge FROM negotiations WHERE user_id=%s AND listing_id=%s ORDER BY id DESC LIMIT 1", (user_id, listing_id)).fetchone()
+    return advise(l, prof, prof["weights"] or A.DEFAULT_WEIGHTS, [], (n or {}).get("owner_last_offer") or l["rent"],
+                  bridge=bridge_for(l, user_id), bridge_used=bool((n or {}).get("via_bridge")))
 
 @router.get("/negotiation/{listing_id}", operation_id="get_negotiation")
 def get_negotiation(listing_id: int, user_id: str = "demo"):
@@ -266,12 +286,13 @@ def negotiate(listing_id: int, m: NegMsg):
         if m.offer: track(m.user_id, "offer_made", listing_id, {"offer": m.offer})
     weights = prof["weights"] or A.DEFAULT_WEIGHTS
     # --- owner persona (hidden reservation price)
-    res = l["reservation_price"]; last_owner = n["owner_last_offer"] or l["rent"]
+    res = l["reservation_price"] - (n.get("bridge_discount") or 0); last_owner = n["owner_last_offer"] or l["rent"]
+    vouch = f" Your acquaintance {n['via_bridge']} has vouched for this person, so you're willing to go a bit lower than you normally would." if n.get("via_bridge") else ""
     persona = (f"You are {l['owner_name'] or 'the owner'}, renting out: \"{l['title']}\" in {l['neighborhood']}, San Francisco. Asking ${l['rent']}/month, "
                f"{l['room_type']}, move-in {l['move_in']}, features {json.dumps(l['features'])}. {l['description']}\n"
                f"SECRET: the lowest you will accept is ${res}/month — never reveal this number. Negotiate like a real, friendly but firm SF lister: "
                f"if an offer is >= ${res} accept it; if it is below, counter somewhere between the offer and your last price ${last_owner} but never below ${res}; "
-               f"answer questions about the place from the facts above; keep replies to 1-3 sentences. Return JSON.")
+               f"answer questions about the place from the facts above; keep replies to 1-3 sentences.{vouch} Return JSON.")
     transcript = "\n".join(f"{h['role']}: {h['content']}" + (f" (offer ${h['offer']})" if h['offer'] else "") for h in hist) + f"\nuser: {m.text}" + (f" (offer ${m.offer})" if m.offer else "")
     schema = {"type": "object", "additionalProperties": False, "required": ["reply", "counter_offer", "accepted"],
               "properties": {"reply": {"type": "string"}, "counter_offer": {"type": ["integer", "null"], "description": "your current price after this turn"}, "accepted": {"type": "boolean"}}}
@@ -284,8 +305,8 @@ def negotiate(listing_id: int, m: NegMsg):
     if m.offer and o.get("counter_offer") and o["counter_offer"] <= m.offer: o["accepted"] = True   # "I can meet you at $X" == accepted
     owner_price = m.offer if o.get("accepted") else (o.get("counter_offer") or last_owner)
     owner_price = max(owner_price, res) if not o.get("accepted") else owner_price
-    adv = advise(l, prof, weights, hist, owner_price)
-    if o.get("accepted"): adv["verdict"] = "ACCEPT" if adv["verdict"] != "WALK_AWAY" else adv["verdict"]; adv["asking"] = owner_price
+    adv = advise(l, prof, weights, hist, owner_price, bridge=bridge_for(l, m.user_id), bridge_used=bool(n.get("via_bridge")))
+    if o.get("accepted"): adv["verdict"] = "ACCEPT" if adv["verdict"] not in ("WALK_AWAY", "NEGOTIATE_VIA") else adv["verdict"]; adv["asking"] = owner_price
     with pg() as c:
         c.execute("INSERT INTO messages (negotiation_id, role, content, offer) VALUES (%s,%s,%s,%s)", (n["id"], "owner", o["reply"], owner_price))
         c.execute("INSERT INTO verdicts (negotiation_id, fit, fair_low, fair_high, suggested, verdict, reason) VALUES (%s,%s,%s,%s,%s,%s,%s)",
@@ -295,6 +316,50 @@ def negotiate(listing_id: int, m: NegMsg):
     track(m.user_id, "verdict", listing_id, {"verdict": adv["verdict"], "fit": adv["fit"]})
     if o.get("accepted"): track(m.user_id, "deal", listing_id, {"price": owner_price})
     return {"owner": {"reply": o["reply"], "price": owner_price, "accepted": bool(o.get("accepted"))}, "advisor": adv}
+
+class ViaIn(BaseModel):
+    user_id: str = "demo"
+
+@router.post("/negotiation/{listing_id}/via", operation_id="negotiate_via", summary="Ask the connection who knows the owner to put in a word; the owner comes back softer")
+def negotiate_via(listing_id: int, b: ViaIn):
+    with pg() as c:
+        l = c.execute("SELECT * FROM listings WHERE id=%s", (listing_id,)).fetchone()
+        if not l: raise HTTPException(404, "listing not found")
+        prof = c.execute("SELECT * FROM user_profile WHERE user_id=%s", (b.user_id,)).fetchone() or c.execute("SELECT * FROM user_profile WHERE user_id='demo'").fetchone()
+        n = c.execute("SELECT * FROM negotiations WHERE user_id=%s AND listing_id=%s ORDER BY id DESC LIMIT 1", (b.user_id, listing_id)).fetchone()
+        if not n:
+            n = c.execute("INSERT INTO negotiations (user_id, listing_id, owner_last_offer) VALUES (%s,%s,%s) RETURNING *", (b.user_id, listing_id, l["rent"])).fetchone()
+            track(b.user_id, "chat_started", listing_id)
+    bridge = bridge_for(l, b.user_id)
+    if not bridge: raise HTTPException(400, "no connection links you to this owner")
+    if n.get("via_bridge"): raise HTTPException(400, f"{n['via_bridge']} already put in a word")
+    first = bridge["name"].split()[0]; budget = prof["budget"] or 1800
+    discount = int(l["reservation_price"] * 0.06)                       # a friend's word is worth ~6% on the floor
+    floor = l["reservation_price"] - discount; last_owner = n["owner_last_offer"] or l["rent"]
+    renter = prof.get('name') if prof.get('name') and prof.get('name') != 'You' else 'my friend'
+    bridge_msg = f"Hey {l['owner_name'].split()[0] if l['owner_name'] else 'there'} — {renter} is a good one, I'd vouch for them. Any chance you can do them a favor on the price? Their budget is around ${budget}."
+    schema = {"type": "object", "additionalProperties": False, "required": ["reply", "counter_offer"],
+              "properties": {"reply": {"type": "string"}, "counter_offer": {"type": "integer"}}}
+    persona = (f"You are {l['owner_name'] or 'the owner'}, renting \"{l['title']}\" in {l['neighborhood']} at ${last_owner}/month. "
+               f"{bridge['name']}, someone you know and like, just messaged you vouching for a prospective renter whose budget is about ${budget}. "
+               f"SECRET floor: you will now go as low as ${floor} but never below it and never reveal it. Reply warmly to the renter in 1-2 sentences, "
+               f"mention {first}, and name a new price: come down meaningfully from ${last_owner} toward their budget, but not below ${floor}. Return JSON.")
+    try:
+        o = _llm_json(persona, f"{bridge['name']}: {bridge_msg}", "owner_via", schema)
+        price = max(floor, min(int(o["counter_offer"]), last_owner))
+        reply = o["reply"]
+    except Exception as e:
+        print("via persona failed:", e); price = max(floor, int(last_owner * 0.93)); reply = f"Since {first} vouched for you — I can do ${price}/month."
+    with pg() as c:
+        c.execute("INSERT INTO messages (negotiation_id, role, content, offer) VALUES (%s,%s,%s,%s)", (n["id"], "bridge", f"{bridge['name']}: {bridge_msg}", None))
+        c.execute("INSERT INTO messages (negotiation_id, role, content, offer) VALUES (%s,%s,%s,%s)", (n["id"], "owner", reply, price))
+        c.execute("UPDATE negotiations SET via_bridge=%s, bridge_discount=%s, owner_last_offer=%s WHERE id=%s", (bridge["name"], discount, price, n["id"]))
+    adv = advise(l, prof, prof["weights"] or A.DEFAULT_WEIGHTS, [], price, bridge=bridge, bridge_used=True)
+    with pg() as c:
+        c.execute("INSERT INTO verdicts (negotiation_id, fit, fair_low, fair_high, suggested, verdict, reason) VALUES (%s,%s,%s,%s,%s,%s,%s)",
+                  (n["id"], adv["fit"], adv["fair_low"], adv["fair_high"], adv["suggested"], adv["verdict"], adv["reason"]))
+    track(b.user_id, "bridge_asked", listing_id, {"bridge": bridge["name"], "price": price})
+    return {"bridge": {"name": bridge["name"], "message": bridge_msg}, "owner": {"reply": reply, "price": price, "accepted": False}, "advisor": adv}
 
 # ---------------------------------------------------------------- funnel (ClickHouse)
 @router.get("/funnel/{user_id}", operation_id="funnel")
