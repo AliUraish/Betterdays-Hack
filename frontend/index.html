@@ -141,17 +141,19 @@ table.rank td.num{width:44px;text-align:right;font:500 12px var(--mono);color:va
 .feat{display:flex;flex-wrap:wrap;gap:5px} .feat span{font-size:11px;padding:3px 8px;border-radius:999px;border:1px solid var(--line);color:var(--text-2)} .feat span.on{color:#b7d3f6;border-color:rgba(57,135,229,.5)} .feat span.miss{color:#ffb4b4;border-color:rgba(230,103,103,.5);text-decoration:line-through}
 .advisor{border:1px solid var(--line-2);border-radius:12px;padding:12px;background:linear-gradient(180deg,rgba(57,135,229,.10),rgba(57,135,229,.02));margin:12px 0}
 .advisor .vd{display:inline-block;font:700 11px var(--font);letter-spacing:.06em;padding:4px 9px;border-radius:999px;margin-bottom:8px}
-.vd.ACCEPT{background:rgba(12,163,12,.25);color:#7ee07e} .vd.COUNTER{background:rgba(250,178,25,.2);color:#ffd166} .vd.WALK_AWAY{background:rgba(208,59,59,.25);color:#ffb4b4}
+.vd.ACCEPT{background:rgba(12,163,12,.25);color:#7ee07e} .vd.NEGOTIATE_VIA{background:rgba(57,135,229,.25);color:#b7d3f6} .advisor.NEGOTIATE_VIA{border-color:rgba(57,135,229,.5)}
+.neg .msg.br{align-self:stretch;max-width:100%;background:rgba(25,158,112,.12);border:1px solid rgba(25,158,112,.4);font-size:12.5px} .neg .msg.br b{color:#7ee07e} .vd.COUNTER{background:rgba(250,178,25,.2);color:#ffd166} .vd.WALK_AWAY{background:rgba(208,59,59,.25);color:#ffb4b4}
 .advisor .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0} .advisor .grid div{background:var(--surface-2);border-radius:8px;padding:6px 8px} .advisor .grid b{display:block;font-size:14px} .advisor .grid small{color:var(--text-3);font-size:10.5px}
 .advisor .why{font-size:12px;color:var(--text-2);margin-top:6px}
 .advisor .big{font:700 24px/1.15 var(--font);letter-spacing:-.02em;margin:6px 0 2px} .advisor .plan{font-size:12px;color:var(--text-2)}
 .advisor.ACCEPT{border-color:rgba(12,163,12,.45);background:linear-gradient(180deg,rgba(12,163,12,.12),rgba(12,163,12,.02))} .advisor.COUNTER{border-color:rgba(250,178,25,.4);background:linear-gradient(180deg,rgba(250,178,25,.10),rgba(250,178,25,.02))} .advisor.WALK_AWAY{border-color:rgba(208,59,59,.45);background:linear-gradient(180deg,rgba(208,59,59,.12),rgba(208,59,59,.02))}
 .advisor .fitsm{text-align:center;background:var(--surface-2);border-radius:10px;padding:6px 10px;min-width:52px} .advisor .fitsm b{display:block;font-size:18px} .advisor .fitsm small{color:var(--text-3);font-size:10px}
-.ladder{position:relative;height:8px;border-radius:4px;background:var(--surface-3);margin:44px 6px 40px}
+.ladder{position:relative;height:8px;border-radius:4px;background:var(--surface-3);margin:58px 6px 40px}
 .ladder .fair{position:absolute;top:0;bottom:0;background:rgba(25,158,112,.5);border-radius:4px}
 .ladder .mk{position:absolute;top:50%;transform:translate(-50%,-50%)} .ladder .mk i{display:block;width:12px;height:12px;border-radius:50%;border:2px solid #14151a}
 .ladder .mk span{position:absolute;left:50%;transform:translateX(-50%);bottom:14px;white-space:nowrap;font:600 10.5px var(--font);color:var(--text)} .ladder .mk span.b{bottom:auto;top:14px;color:var(--text-2);font-weight:500}
 .ladder .mk.ask i{background:#fff} .ladder .mk.off i{background:#7ee07e} .ladder .mk.off span{color:#7ee07e} .ladder .mk.bud i{background:#c98500} .ladder .mk.max i{background:#e66767} .ladder .mk.max span{color:#ffb4b4}
+.ladder .mk span.t2{bottom:30px;color:var(--text-2);font-weight:500} .ladder .mk span.le{left:-6px;transform:none} .ladder .mk span.re{left:auto;right:-6px;transform:none}
 .ladder .fl{position:absolute;top:26px;transform:translateX(-50%);font:500 10px var(--mono);color:var(--text-3);white-space:nowrap}
 .neg{display:flex;flex-direction:column;gap:8px;margin:10px 0} .neg .msg{max-width:88%} .neg .msg.o{align-self:flex-start;background:var(--surface-2);border:1px solid var(--line)} .neg .msg .of{display:block;font:500 11px var(--mono);color:#ffd166;margin-top:3px}
 .email{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:12px;white-space:pre-wrap;color:var(--text-2)} .email b{color:var(--text)}
@@ -533,7 +535,7 @@ function drawNet(){
     ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fillStyle = n.degree===0?'#fff': n.is_member?'#3987e5':'#2a2c33'; ctx.fill();
     if(!n.is_member && n.degree){ ctx.strokeStyle='#8a897f'; ctx.lineWidth=1.2; ctx.stroke(); }
     if (n.listings.length){ ctx.beginPath(); ctx.arc(x+r*0.8,y-r*0.8,3.4,0,Math.PI*2); ctx.fillStyle='#d95926'; ctx.fill(); ctx.strokeStyle='#14151a'; ctx.lineWidth=1; ctx.stroke(); }
-    if (n.degree===1 || onPath.has(n.id)){ ctx.fillStyle='rgba(242,242,239,0.9)'; ctx.font=(onPath.has(n.id)?'600 ':'500 ')+'9.5px Inter, sans-serif'; ctx.textAlign='center'; ctx.fillText(n.name.split(' ')[0], x, y+r+11); }
+    if (n.degree && (n.degree===1 || onPath.has(n.id))){ ctx.fillStyle='rgba(242,242,239,0.9)'; ctx.font=(onPath.has(n.id)?'600 ':'500 ')+'9.5px Inter, sans-serif'; ctx.textAlign='center'; ctx.fillText(n.name.split(' ')[0], x, y+r+11); }
     ctx.globalAlpha = 1;
   }
   ctx.fillStyle='#0f1013'; ctx.font='700 9px Inter'; ctx.textAlign='center'; ctx.fillText('YOU', cx, cy+3);
@@ -586,11 +588,7 @@ async function openListing(id){
       <div class="bar" title="Rent vs fair range and your budget"><span class="lbl">Price</span><span class="trk"><i style="width:${f.price_score}%;background:var(--s3)"></i></span><span class="v">${Math.round(f.price_score)}</span></div>
       <div class="bar" title="Must-haves and room type"><span class="lbl">Must-haves</span><span class="trk"><i style="width:${f.feature_score}%;background:var(--s7)"></i></span><span class="v">${Math.round(f.feature_score)}</span></div>
     </div>
-    <div class="sec-title">Price check <span style="font-weight:500;letter-spacing:0;text-transform:none;color:var(--text-3)"><span style="color:#c98500">▍</span>budget $${P.budget} · <span style="color:#199e70">▬</span> fair range</span></div>
-    <div class="pricebar"><div class="fair" style="left:${pct(f.fair_low)};width:calc(${pct(f.fair_high)} - ${pct(f.fair_low)})"></div>
-      <div class="mk" style="left:${pct(l.rent)}"></div><div class="lb" style="left:${pct(l.rent)}">asking $${l.rent}</div>
-      <div class="mk b" style="left:${pct(P.budget)}" title="your budget $${P.budget}"></div>
-      <div class="lb u" style="left:${pct(f.fair_low)}">$${f.fair_low}</div><div class="lb u" style="left:${pct(f.fair_high)}">$${f.fair_high}</div></div>
+    <div class="sec-title">Your advisor</div><div id="adv"><div class="note">computing…</div></div>
     <div class="feat" style="margin-bottom:12px">${feats}</div>
     <div class="note" style="margin:0 0 12px">${esc(l.description||'')}${l.url?` · <a href="${esc(l.url)}" target="_blank" rel="noopener" style="color:#b7d3f6">source ↗</a>`:''}</div>
     <div class="sec-title">How you reach ${esc(l.owner_name||'the owner')}</div>
@@ -598,6 +596,7 @@ async function openListing(id){
     <div id="reach-box" style="margin-top:12px"></div>
     <div id="neg-box"></div>`;
   renderReach(l, chat);
+  api(`/api/net/advice/${l.id}?user_id=${encodeURIComponent(state.user)}`).then(a => { if(state.selListing===id) renderAdvisor(a, true); });
   if (chat) loadNegotiation(l);
 }
 function renderReach(l, chat){
@@ -615,35 +614,54 @@ function renderReach(l, chat){
   };
 }
 async function loadNegotiation(l){
-  const box=$('#neg-box'); box.innerHTML = `<div class="sec-title" style="margin-top:16px">Your advisor</div><div id="adv"><div class="note">computing…</div></div>
-    <div class="sec-title" style="margin-top:14px">Chat with ${esc(l.owner_name||'the owner')}</div><div class="neg" id="neg"></div>
+  const box=$('#neg-box'); box.innerHTML = `<div class="sec-title" style="margin-top:14px">Chat with ${esc(l.owner_name||'the owner')}</div><div class="neg" id="neg"></div>
     <form id="neg-f" class="row"><input type="text" id="neg-i" placeholder="Ask a question or make an offer…" autocomplete="off"><input type="text" id="neg-o" placeholder="$ offer" style="width:84px"><button class="btn primary">Send</button></form>
     <div class="note">Perfect = neighborhood ≥ 60 on your weights, rent ≤ min(budget, fair median +5%), all must-haves. Otherwise the advisor tells you what to offer, and the price to never go above.</div>`;
-  const [h, adv] = await Promise.all([api(`/api/net/negotiation/${l.id}?user_id=${encodeURIComponent(state.user)}`), api(`/api/net/advice/${l.id}?user_id=${encodeURIComponent(state.user)}`)]);
-  renderAdvisor(adv, !h.messages.length);
+  const h = await api(`/api/net/negotiation/${l.id}?user_id=${encodeURIComponent(state.user)}`);
   h.messages.forEach(m => addNeg(m.role, m.content, m.offer));
   if (!h.messages.length) addNeg('owner', `Hi! I'm ${l.owner_name||'the owner'} — happy to answer questions about the place. Asking $${l.rent}/mo.`, null);
   $('#neg-f').onsubmit = async e => { e.preventDefault(); const t=$('#neg-i').value.trim(), o=parseInt($('#neg-o').value.replace(/\D/g,''))||null; if(!t&&!o) return;
     addNeg('user', t||`Offer $${o}`, o); $('#neg-i').value=''; $('#neg-o').value=''; const th=addNeg('owner','typing…',null); th.classList.add('thinking');
     try{ const r = await api(`/api/net/negotiation/${l.id}/message`,{user_id:state.user, text:t||`I'd like to offer $${o}/month.`, offer:o});
-      th.remove(); addNeg('owner', r.owner.reply, r.owner.accepted?null:r.owner.price); renderAdvisor(r.advisor, false); if(r.owner.accepted) toast('Deal agreed at $'+r.owner.price+' 🎉'); loadFunnel();
+      th.remove(); addNeg('owner', r.owner.reply, r.owner.accepted?null:r.owner.price); renderAdvisor(r.advisor, false); $('#adv').scrollIntoView({block:'nearest'}); if(r.owner.accepted) toast('Deal agreed at $'+r.owner.price+' 🎉'); loadFunnel();
     }catch(err){ th.textContent='error: '+err.message; } };
 }
-function addNeg(role, text, offer){ const m=document.createElement('div'); m.className='msg '+(role==='user'?'u':'o'); m.textContent=text; if(offer){ const s=document.createElement('span'); s.className='of'; s.textContent=(role==='user'?'your offer ':'their price ')+'$'+offer; m.appendChild(s); } $('#neg').appendChild(m); m.scrollIntoView({block:'nearest'}); return m; }
+function addNeg(role, text, offer){ const m=document.createElement('div'); m.className='msg '+(role==='user'?'u':role==='bridge'?'br':'o'); m.textContent=text; if(offer){ const s=document.createElement('span'); s.className='of'; s.textContent=(role==='user'?'your offer ':'their price ')+'$'+offer; m.appendChild(s); } $('#neg').appendChild(m); m.scrollIntoView({block:'nearest'}); return m; }
+function ladderMarks(a, opening, pct){
+  const items = [[a.asking, opening?'asking':'their price', 'ask'], [a.suggested, a.verdict==='ACCEPT'?'accept':'offer', 'off'], [a.budget, 'budget', 'bud'], [a.walk_away_above, 'never above', 'max']];
+  const groups = {}; items.forEach(([v,l,c]) => { (groups[v] ||= {v, labels:[], cls:[]}); groups[v].labels.push(l); groups[v].cls.push(c); });
+  // greedy row assignment so labels never overlap: rows = top, bottom, top2 (widths estimated at ~2.1% per char)
+  const rows = [-1e9, -1e9, -1e9], cls = ['', 'b', 't2'];
+  return Object.values(groups).sort((x,y)=>x.v-y.v).map(g => { const p=parseFloat(pct(g.v)); const text=`${g.labels.join(' · ')} $${g.v}`; const w=text.length*2.1;
+    const edge = p<18?' le':p>82?' re':''; const left = edge===' le'?p : edge===' re'?p-w : p-w/2;
+    let r = rows.findIndex(x => x < left - 1); if (r<0) r = 2; rows[r] = left + w;
+    return `<div class="mk ${g.cls[0]}" style="left:${pct(g.v)}"><i></i><span class="${cls[r]}${edge}">${text}</span></div>`; }).join('');
+}
 function renderAdvisor(a, opening){
   const v=a.verdict; const P=state.profile||{budget:a.budget};
-  const head = v==='ACCEPT' ? `Take it at $${a.asking}` : v==='COUNTER' ? `Offer $${a.suggested}` : `Walk away above $${a.walk_away_above}`;
+  const first = a.bridge ? a.bridge.name.split(' ')[0] : null;
+  const head = v==='ACCEPT' ? `Take it at $${a.asking}` : v==='COUNTER' ? `Offer $${a.suggested}` : v==='NEGOTIATE_VIA' ? `Negotiate through ${first} — or walk away` : `Walk away above $${a.walk_away_above}`;
   const vals=[a.fair_low,a.fair_high,a.asking,a.budget,a.suggested,a.walk_away_above].filter(x=>x!=null); const lo=Math.min(...vals)*0.93, hi=Math.max(...vals)*1.06; const pct=x=>((x-lo)/(hi-lo)*100).toFixed(1)+'%';
   $('#adv').innerHTML = `<div class="advisor ${v}">
     <div class="row" style="justify-content:space-between;align-items:flex-start"><div><span class="vd ${v}">${v.replace('_',' ')}</span>${a.perfect?'<span class="tag">perfect match</span>':''}<div class="big">${head}</div><div class="plan">${esc(a.plan||'')}</div></div><div class="fitsm"><b>${Math.round(a.fit)}</b><small>fit</small></div></div>
     <div class="ladder"><div class="fair" style="left:${pct(a.fair_low)};width:calc(${pct(a.fair_high)} - ${pct(a.fair_low)})"></div>
-      <div class="mk ask" style="left:${pct(a.asking)}"><i></i><span>${opening?'asking':'their price'} $${a.asking}</span></div>
-      <div class="mk off" style="left:${pct(a.suggested)}"><i></i><span>${v==='ACCEPT'?'accept':'offer'} $${a.suggested}</span></div>
-      <div class="mk bud" style="left:${pct(a.budget)}"><i></i><span class="b">budget $${a.budget}</span></div>
-      <div class="mk max" style="left:${pct(a.walk_away_above)}"><i></i><span class="b">never above $${a.walk_away_above}</span></div>
+      ${ladderMarks(a, opening, pct)}
       <div class="fl" style="left:${pct(a.fair_low)}">fair $${a.fair_low}</div><div class="fl r" style="left:${pct(a.fair_high)}">$${a.fair_high}</div></div>
     <div class="why">${esc(a.reason||'')}</div>
-    ${v==='COUNTER'?`<div class="row" style="margin-top:8px"><button class="btn" onclick="$('#neg-o').value='${a.suggested}';$('#neg-i').value='Would you take $${a.suggested}? I can sign this week.';$('#neg-i').focus()">Use this offer</button></div>`:''}</div>`;
+    ${v==='COUNTER'?`<div class="row" style="margin-top:8px"><button class="btn" onclick="$('#neg-o').value='${a.suggested}';$('#neg-i').value='Would you take $${a.suggested}? I can sign this week.';$('#neg-i').focus()">Use this offer</button></div>`:''}
+    ${v==='NEGOTIATE_VIA'?`<div class="row" style="margin-top:10px"><button class="btn primary" id="adv-via">Ask ${esc(first)} to negotiate</button><button class="btn ghost" onclick="toast('Okay — walking away from this one')">Walk away</button></div>`:''}</div>`;
+  if (v==='NEGOTIATE_VIA') $('#adv-via').onclick = () => askBridge(a);
+}
+async function askBridge(a){
+  const l = state.listings.find(x=>x.id===state.selListing); if(!l) return;
+  const btn = $('#adv-via'); btn.disabled = true; btn.textContent = `Asking ${a.bridge.name.split(' ')[0]}…`;
+  if (!$('#neg')) { state.introduced[l.id] = true; renderReach(l, true); await loadNegotiation(l); }
+  try{
+    const r = await api(`/api/net/negotiation/${l.id}/via`, {user_id: state.user});
+    const m = addNeg('bridge', '', null); m.innerHTML = `<b>${esc(r.bridge.name)}</b> → ${esc(l.owner_name)}: ${esc(r.bridge.message)}`;
+    addNeg('owner', r.owner.reply, r.owner.price); renderAdvisor(r.advisor, false); $('#adv').scrollIntoView({block:'nearest'}); loadFunnel();
+    toast(`${r.bridge.name.split(' ')[0]} put in a word — ${l.owner_name.split(' ')[0]} is now at $${r.owner.price}`);
+  }catch(e){ toast(e.message); btn.disabled=false; btn.textContent=`Ask ${a.bridge.name.split(' ')[0]} to negotiate`; }
 }
 /* invite link landing (?join=TOKEN) */
 (async () => { const t = new URLSearchParams(location.search).get('join'); if(!t) return; try{ const r = await api(`/api/net/join/${t}`,{}); toast(`${r.owner} joined via the invite link — chat unlocked`); history.replaceState({},'',location.pathname); setMode('network'); }catch(e){ toast('Invite link invalid'); } })();
